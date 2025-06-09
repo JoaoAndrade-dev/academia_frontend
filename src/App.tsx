@@ -5,6 +5,8 @@ import Home from './pages/home/Home'
 import FormTreino from './components/treino/formtreino/FormTreino'
 import DeletarTreino from './components/treino/deletartreino/DeletarTreino'
 import FormAluno from './components/aluno/FormAluno'
+import AlunoIMC from "./components/aluno/alunoIMC/AlunoIMC"
+import TreinosDoAluno from './pages/treinosUsuario/TreinosUsuarios'
 
 function App() {
   return (
@@ -20,6 +22,9 @@ function App() {
             <Route path="/treinos/form/:id" element={<FormTreino />} />
             <Route path="/alunos/form" element={<FormAluno />} />
             <Route path="/alunos/form/:id" element={<FormAluno />} />
+            <Route path="/alunos/detalhe/:id" element={<AlunoIMC />} />
+            <Route path="/meus-treinos" element={<TreinosDoAluno />} />
+
           </Routes>
         </div>
       </BrowserRouter>

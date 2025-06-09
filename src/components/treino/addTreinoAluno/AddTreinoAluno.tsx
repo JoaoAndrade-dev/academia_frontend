@@ -4,7 +4,6 @@ import { buscar, atualizar } from '../../../services/Service'
 import { type Treino } from '../../../models/Treino'
 import type { Aluno } from '../../../models/Aluno'
 
-
 interface AdicionarTreinoProps {
   treino: Treino
   onSuccess?: () => void
@@ -17,7 +16,6 @@ export default function AdicionarTreino({ treino, onSuccess }: AdicionarTreinoPr
   const [error, setError] = useState('')
 
   useEffect(() => {
-    // Busca aluno do usuário logado (assumindo endpoint /alunos/usuario/{id})
     buscar(`/alunos/usuario/${usuario.id}`, setAluno, {
       headers: { Authorization: usuario.token }
     }).catch(() => {
@@ -31,15 +29,19 @@ export default function AdicionarTreino({ treino, onSuccess }: AdicionarTreinoPr
     setError('')
 
     try {
-      // Atualiza o aluno atribuindo o treino selecionado
-      const alunoAtualizado = { ...aluno, treino }
-      await atualizar('/alunos/atualizar', alunoAtualizado, setAluno, {
+      const treinoComAluno = {
+        ...treino,
+        aluno: { id: aluno.id }
+      }
+
+      await atualizar('/treinos/atualizar', treinoComAluno, () => {}, {
         headers: { Authorization: usuario.token }
       })
+
       if (onSuccess) onSuccess()
-      alert('Treino adicionado ao aluno com sucesso!')
+      alert('Aluno associado ao treino com sucesso!')
     } catch {
-      setError('Erro ao atualizar aluno com o treino')
+      setError('Erro ao associar aluno ao treino')
     } finally {
       setLoading(false)
     }
@@ -52,7 +54,7 @@ export default function AdicionarTreino({ treino, onSuccess }: AdicionarTreinoPr
         disabled={loading}
         onClick={handleAdicionar}
         className="bg-green-500 hover:bg-green-600 text-white font-bold py-1 px-3 rounded"
-        title="Adicionar treino ao aluno"
+        title="Associar aluno ao treino"
       >
         {loading ? 'Adicionando...' : '+'}
       </button>

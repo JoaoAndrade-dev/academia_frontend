@@ -12,55 +12,47 @@ export default function ListarTreinos() {
   const navigate = useNavigate()
 
   useEffect(() => {
-    if (usuario.token) {
-      // Buscar treinos
-      buscar('/treinos/get-all', setTreinos, {
-        headers: { Authorization: usuario.token }
-      }).catch((error) => {
-        console.error('Erro ao buscar treinos:', error)
-        if (error.toString().includes('403')) {
-          handleLogout()
-        }
-      })
+    if (!usuario.token) return
 
-      // Buscar alunos
-      buscar('/alunos/get-all', (listaAlunos: Aluno[]) => {
-        // Filtra aluno que pertence ao usuário logado, verificando se usuario existe
-        const alunoDoUsuario = listaAlunos.find(
-          (a) => a.usuario?.id === usuario.id
-        )
-        if (alunoDoUsuario) setAluno(alunoDoUsuario)
-      }, {
-        headers: { Authorization: usuario.token }
-      }).catch((error) => {
-        console.error('Erro ao buscar alunos:', error)
-        if (error.toString().includes('403')) {
-          handleLogout()
-        }
-      })
-    }
+    buscar('/treinos/get-all', setTreinos, {
+      headers: { Authorization: usuario.token }
+    }).catch((error) => {
+      console.error('Erro ao buscar treinos:', error)
+      if (error.toString().includes('403')) handleLogout()
+    })
+
+    buscar('/alunos/get-all', (listaAlunos: Aluno[]) => {
+      const alunoDoUsuario = listaAlunos.find(
+        (a) => a.usuario?.id === usuario.id
+      )
+      if (alunoDoUsuario) setAluno(alunoDoUsuario)
+    }, {
+      headers: { Authorization: usuario.token }
+    }).catch((error) => {
+      console.error('Erro ao buscar alunos:', error)
+      if (error.toString().includes('403')) handleLogout()
+    })
   }, [usuario, handleLogout])
 
-  async function adicionarTreino(treinoSelecionado: Treino) {
+  async function associarTreinoAoAluno(treinoSelecionado: Treino) {
     if (!aluno) {
       alert('Aluno não encontrado para o usuário logado.')
       return
     }
 
     try {
-      // Atualiza o aluno com o treino selecionado
-      const alunoAtualizado = { ...aluno, treino: treinoSelecionado }
+      const treinoAtualizado = {
+        ...treinoSelecionado,
+        aluno: { id: aluno.id }
+      }
 
-      await atualizar('/alunos/atualizar', alunoAtualizado, setAluno, {
+      await atualizar('/treinos/atualizar', treinoAtualizado, () => {}, {
         headers: { Authorization: usuario.token }
       })
 
-      alert(`Treino "${treinoSelecionado.descricao}" adicionado ao aluno ${aluno.nome} com sucesso!`)
-
-      // Atualiza localmente o aluno com o novo treino
-      setAluno(alunoAtualizado)
+      alert(`Treino "${treinoSelecionado.descricao}" associado ao aluno ${aluno.nome} com sucesso!`)
     } catch (error) {
-      alert('Erro ao adicionar treino ao aluno.')
+      alert('Erro ao associar treino ao aluno.')
       console.error(error)
     }
   }
@@ -89,6 +81,11 @@ export default function ListarTreinos() {
                 <p><strong>Dia da Semana:</strong> {treino.diaSemanaTreino}</p>
                 <p><strong>Tipo:</strong> {treino.tipoTreino}</p>
                 <p><strong>Status:</strong> {treino.status}</p>
+                {treino.aluno && (
+                  <p className="text-sm text-green-700 font-medium">
+                    Associado a: {treino.aluno.nome}
+                  </p>
+                )}
               </div>
               <div className="flex gap-2">
                 <button
@@ -104,9 +101,9 @@ export default function ListarTreinos() {
                   Deletar
                 </button>
                 <button
-                  onClick={() => adicionarTreino(treino)}
+                  onClick={() => associarTreinoAoAluno(treino)}
                   className="bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-3 rounded"
-                  title="Adicionar treino ao aluno"
+                  title="Associar treino ao aluno"
                 >
                   +
                 </button>

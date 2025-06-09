@@ -39,7 +39,7 @@ const [aluno, setAluno] = useState<Aluno>({
   try {
     const alunoParaEnviar = {
       ...aluno,
-      treino: {id:4},
+      treinos: [{ id: 1 }],
       usuario: { id: usuario.id }
     }
 
